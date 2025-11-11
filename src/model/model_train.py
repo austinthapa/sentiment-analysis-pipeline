@@ -3,13 +3,18 @@ import joblib
 import logging
 import lightgbm
 import yaml
+import mlflow
 import pandas as pd
+import matplotlib.pyplot as plt
 
 from typing import Tuple, Any, Dict
 from pandas import DataFrame, Series
 from pathlib import Path
 from scipy.sparse import csr_matrix
 from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics import (
+    accuracy_score, precision_score, recall_score, f1_score, classification_report, confusion_matrix, ConfusionMatrixDisplay
+)
 
 # Configure Logging
 logging.basicConfig(
@@ -158,7 +163,7 @@ def train_model(
     **params: Any
 )-> lightgbm.LGBMClassifier:
     """
-    Trains the LightGBM model.
+    Trains the LightGBM model with updated parameters.
     
     This function intialized the LightGBM classifier with the provided parameters,
     fits it to the sparse training data, returns the fitted model object.
@@ -175,12 +180,51 @@ def train_model(
         Exception: If any errors occurs during model initialization or training. 
     """
     try:
-        logger.info("Training the model has started...")
+        logger.info(f"Training the model with params: {params}")
+                
+        # Train the model
+        logger.info("Starting model training")
+        
+        mlflow.set_experiment(experiment_name="Light_GBM_Experiment")
+        mlflow.set_tracking_uri("/Users/anilthapa/sentiment-analysis-pipeline/mlruns")
+        
         LGBMClassifier = lightgbm.LGBMClassifier(
             **params
         )
-        LGBMClassifier.fit(X_train, y_train)
-        logger.info("Training the model has completed...")
+        
+        with mlflow.start_run(run_name="Light_GBM_Model"):
+            mlflow.log_params(params)
+            
+            LGBMClassifier.fit(X_train, y_train)
+            
+            y_predict = LGBMClassifier.predict(X_train)
+            
+            mlflow.lightgbm.log_model(
+                lgb_model=LGBMClassifier, 
+                input_example=X_train[:10],
+                registered_model_name="LGBM_Classifier"
+            )
+            
+            mlflow.log_metrics({
+                "accuracy_score_train": accuracy_score(y_train, y_predict),
+                "precision_score_train": precision_score(y_train, y_predict, average = 'macro'),
+                "recall_score_train": recall_score(y_train, y_predict, average = 'macro'),
+                "f1_score_train": f1_score(y_train, y_predict, average = 'macro')
+            })
+            
+            c_matrix = confusion_matrix(y_train, y_predict)
+            c_matrix_disp = ConfusionMatrixDisplay(c_matrix, display_labels=LGBMClassifier.classes_)
+            c_matrix_disp.plot(cmap="Blues")
+            plt.savefig("confusion_matrix.png")
+            mlflow.log_artifact("confusion_matrix.png")
+            plt.close()
+            
+            clf_report = classification_report(y_train, y_predict)
+            with open("classification_report.txt", "w") as f:
+                f.write(clf_report)
+            mlflow.log_artifact("classification_report.txt")
+            logger.info("Training model completed and logged successfully to MLflow.")
+            
         return LGBMClassifier
     except Exception as e:
         logger.error(f"Unexpected while training the model: {e}", exc_info=True)
