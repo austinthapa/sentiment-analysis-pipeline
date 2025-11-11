@@ -1,0 +1,12 @@
+model:
+  random_state: 42
+  boosting_type: gbdt
+  class_weight: null
+  colsample_bytree: 1.0
+  importance_type: split
+  learning_rate: 0.1
+  max_depth: 25
+  min_child_samples: 20
+  min_child_weight: 0.001
+  n_estimators: 50
+  n_jobs: -1
