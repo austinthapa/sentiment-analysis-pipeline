@@ -1,0 +1,32 @@
+stages:
+  data_ingestion:
+    cmd: python src/data/data_ingestion.py
+    deps:
+      - src/data/data_ingestion.py
+    outs:
+      - data/raw
+
+  data_preprocess:
+    cmd: python src/data/text_data_preprocessing.py
+    deps:
+      - src/data/text_data_preprocessing.py
+      - data/raw
+    outs:
+      - data/clean
+  
+  model_train:
+    cmd: python src/model/model_train.py
+    deps:
+      - src/model/model_train.py
+      - data/clean/train.csv
+    params:
+      - model
+    outs:
+      - artifacts/light_gbm_clf.joblib
+      - artifacts/Tfidf_vectorizer.joblib
+
+  model_evaluation:
+    cmd: python src/model/model_evaluation.py
+    deps:
+      - src/model/model_evaluation.py
+      - data/clean/test.csv
