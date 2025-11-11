@@ -49,14 +49,14 @@ def load_data(
             raise ValueError("Loaded data is empty")
         logger.info(f"""
                     Successfully loaded data from: {data_url}
-                    DataFrame: {len(df)} rows and {df.columns} columns.
+                    DataFrame: {len(df)} rows and {len(df.columns)} columns.
                     """)
         return df
     except pd.errors.ParserError as e:
         logger.info(f"Unexpected error occured while loading the data: {e}")
         raise
     except Exception as e:
-        logger.error(f"Error while loading the data: {e}", exc_info=True)
+        logger.error(f"Error error occurred: {e}", exc_info=True)
         raise
 
 def split_data(
@@ -126,7 +126,6 @@ def save_data(
     except Exception as e:
         logger.error(f"Unexpected error saving data: {e}", exc_info=True)
         raise
-    
 
 def main():
     """
@@ -155,6 +154,5 @@ def main():
     # Save the split data (train and test datasets) to project directory
     save_data(train_data, test_data, data_dir)
     
-
 if __name__ == "__main__":
     main()
