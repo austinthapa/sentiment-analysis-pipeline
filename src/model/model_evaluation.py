@@ -1,5 +1,6 @@
 import logging
 import joblib
+import yaml
 
 import pandas as pd
 
@@ -16,6 +17,17 @@ logging.basicConfig(
     format="%(asctime)s-%(levelname)s-%(message)s"
 )
 logger = logging.getLogger(__name__)
+
+# Configure Paths
+def load_config(
+    config_path = "config.yaml"
+):
+    """
+    Function to load path configuration from a YAML file
+    """
+    with open(config_path, "r") as file:
+        config = yaml.safe_load(file)
+    return config
 
 
 """
@@ -47,6 +59,8 @@ def load_data(
             raise FileNotFoundError(f"File not found at the specified location: {path}")
         
         df = pd.read_csv(path)
+        df.dropna(inplace=True)
+        
         if df.empty:
             raise ValueError(f"Read DataFrame is empty")
         
@@ -176,16 +190,20 @@ def evaluate_model(
         raise
     
 def main():
-    data_path = ""
-    model_path = ""
-    vectorizer_path = ""
-    FEATURE_COL = ""
-    LABEL_COL = ""
+    
+    # 0. Load configuration
+    config = load_config()
+    
+    data_path = config['test_data_path']
+    model_path = config['model_path']
+    vectorizer_path = config['vectorizer_path']
+    FEATURE_COL = config['FEATURE_COL']
+    LABEL_COL = config['LABEL_COL']
     
     # 1. Load the data
     test_df  = load_data(data_path=data_path)
-    X_test = test_df[""]
-    y_test = test_df[""]
+    X_test = test_df[FEATURE_COL]
+    y_test = test_df[LABEL_COL] + 1
 
     # 2. Load the model
     model = load_model(model_path=model_path)

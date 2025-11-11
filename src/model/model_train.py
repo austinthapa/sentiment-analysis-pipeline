@@ -11,12 +11,23 @@ from pathlib import Path
 from scipy.sparse import csr_matrix
 from sklearn.feature_extraction.text import TfidfVectorizer
 
-
+# Configure Logging
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s-%(levelname)s-%(message)s"
 )
 logger = logging.getLogger(__name__)
+
+# Configure Paths
+def load_config(
+    config_path = "config.yaml"
+):
+    """
+    Function to load path configuration from a YAML file
+    """
+    with open(config_path, "r") as file:
+        config = yaml.safe_load(file)
+    return config
 
 """
 load_data -> apply_vectorization -> load_params -> train_model -> save_artifacts
@@ -45,6 +56,7 @@ def load_data(
         raise FileNotFoundError(f"File not found at given location: {data_path}")
     try:
         df = pd.read_csv(data_path)
+        df.dropna(inplace=True)  # Test
         
         # Check for empty DataFrame
         if df.empty:
@@ -92,7 +104,7 @@ def apply_vectorization(
         )
         X_train_vec = vectorier.fit_transform(X_train).toarray()
         logger.info("Vectorization successfully complete..."
-                    f"Output shape: {X_train.shape}")
+                    f"\nOutput shape: {X_train.shape}")
 
         return X_train_vec, vectorier
     except Exception as e:
@@ -126,7 +138,7 @@ def load_params(
         logger.info(f"Loading parameters from: {param_path}")
         
         with open(param_path, "r") as file:
-            params = yaml.safe_load(file)
+            params = yaml.safe_load(file)["model"]
         
         if not params:
             logger.warning("Loaded parameters dictionary is empty or invalid")
@@ -224,13 +236,18 @@ def save_artifacts(
     
 def main():
     
+    # 0. Load the configuration
+    config = load_config()
+    data_path = config["train_data_path"]
+    FEATURE_COL = config['FEATURE_COL']
+    LABEL_COL = config['LABEL_COL']
+    
     # 1. Load the data
-    data_path = ""
     df = load_data(data_path=data_path)
     
     # Extract the features and labels.
-    X_train = df[""]
-    y_train = df[""]
+    X_train = df[FEATURE_COL]
+    y_train = df[LABEL_COL] + 1
     
     # 2. Perform vectorization
     X_train_vec, vectorizer = apply_vectorization(
