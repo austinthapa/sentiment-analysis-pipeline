@@ -1,0 +1,28 @@
+# Ignore Local ML Experiments
+mlruns/
+
+# Ignore the data
+data/
+
+# Ignore the DVC and other versioning-related files
+.dvc
+.dvcignore
+.dvc.lock
+.dvc.yaml
+
+# Ignore Git-specific files
+.git/
+.gitignore
+
+# Ignore the test and cache directorires
+.pytest_cache
+
+# Ignore virtual env
+senti-mlops-venv/
+
+# Ignore Readme
+README.md
+
+# Ignore the notebooks and checkpoints
+notebooks/
+.ipynb_checkpoints
