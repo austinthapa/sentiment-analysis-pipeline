@@ -1,3 +1,8 @@
+import os, sys
+
+project_root = os.path.abspath(os.path.join(os.path.abspath(__file__), "..", ".."))
+sys.path.insert(0, project_root)
+
 from fastapi.testclient import TestClient
 from app import app
 
