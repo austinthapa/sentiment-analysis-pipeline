@@ -210,3 +210,8 @@ __marimo__/
 
 # MLflow Experiments
 mlruns
+/data
+
+# DVC
+.dvc
+.dvc/*
