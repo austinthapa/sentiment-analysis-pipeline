@@ -1,0 +1,96 @@
+schema: '2.0'
+stages:
+  data_ingestion:
+    cmd: python src/data/data_ingestion.py
+    deps:
+    - path: src/data/data_ingestion.py
+      hash: md5
+      md5: 87f2fcec4bc77b5785b6af9f1bdf6754
+      size: 4736
+    outs:
+    - path: data/raw
+      hash: md5
+      md5: be1c8cb9e57887e349d060365312fd5a.dir
+      size: 6888954
+      nfiles: 2
+  data_cleaning:
+    cmd: python src/data/text_data_preprocessing.py
+    deps:
+    - path: data/raw
+      hash: md5
+      md5: be1c8cb9e57887e349d060365312fd5a.dir
+      size: 6888954
+      nfiles: 2
+    - path: src/data/text_data_preprocessing.py
+      hash: md5
+      md5: 882eaa85ccbd225834bfe23e03715e2d
+      size: 5163
+    outs:
+    - path: data/clean
+      hash: md5
+      md5: 474a884e1551cc0b64ad176c444b739f.dir
+      size: 5000857
+      nfiles: 2
+  data_preprocess:
+    cmd: python src/data/text_data_preprocessing.py
+    deps:
+    - path: data/raw
+      hash: md5
+      md5: be1c8cb9e57887e349d060365312fd5a.dir
+      size: 6888954
+      nfiles: 2
+    - path: src/data/text_data_preprocessing.py
+      hash: md5
+      md5: 882eaa85ccbd225834bfe23e03715e2d
+      size: 5163
+    outs:
+    - path: data/clean
+      hash: md5
+      md5: 474a884e1551cc0b64ad176c444b739f.dir
+      size: 5000857
+      nfiles: 2
+  model_train:
+    cmd: python src/model/model_train.py
+    deps:
+    - path: data/clean/train.csv
+      hash: md5
+      md5: a2f3a677dafa5fc47bd99165b0b353f1
+      size: 4008320
+    - path: src/model/model_train.py
+      hash: md5
+      md5: e41cd91ed2c6f9bc9c5caacd994ebce4
+      size: 10867
+    params:
+      params.yaml:
+        model:
+          random_state: 42
+          boosting_type: gbdt
+          class_weight:
+          colsample_bytree: 1.0
+          importance_type: split
+          learning_rate: 0.1
+          max_depth: 25
+          min_child_samples: 20
+          min_child_weight: 0.001
+          n_estimators: 50
+          n_jobs: -1
+    outs:
+    - path: artifacts/Tfidf_vectorizer.joblib
+      hash: md5
+      md5: cdb49cff6405571d5798872eb0fd474c
+      size: 36578
+    - path: artifacts/light_gbm_clf.joblib
+      hash: md5
+      md5: 0d2099b0f642e0317561720bdf4923d3
+      size: 562252
+  model_evaluation:
+    cmd: python src/model/model_evaluation.py
+    deps:
+    - path: data/clean/test.csv
+      hash: md5
+      md5: 46105d39f841e33f6d387d112480b9e2
+      size: 992537
+    - path: src/model/model_evaluation.py
+      hash: md5
+      md5: 30c7262e1121c3f375cecd072d334ca3
+      size: 6625
