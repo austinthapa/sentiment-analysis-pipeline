@@ -1,0 +1,3 @@
+features:
+  FEATURE_COL: "clean_comment"
+  LABEL_COL: "category"

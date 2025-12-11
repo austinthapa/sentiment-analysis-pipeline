@@ -1,0 +1,8 @@
+data:
+  raw_data: "https://raw.githubusercontent.com/Himanshu-1703/reddit-sentiment-analysis/refs/heads/main/data/reddit.csv"
+  save_path: "data/clean"
+
+artifacts:
+  model_path: "artifacts/light_gbm_clf.joblib"
+  vectorizer_path: "artifacts/Tfidf_vectorizer.joblib"
+  
