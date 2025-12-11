@@ -1,4 +1,5 @@
 import os
+import yaml
 import logging
 import pandas as pd
 
@@ -15,11 +16,43 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 """
-load_data -> preprocess_data -> save_data
+load_config -> load_data -> preprocess_data -> save_data
 """
 
+def load_config(
+    config_path = "config/paths.yaml"
+) -> dict:
+    """
+    Loads the configuration from a YAML file with error handling.
+    
+    Args:
+        config_path: Configuration path
+    
+    Returns:
+        dict: A dictionary containing configuration data.
+        
+    Raises:
+        FileNotFoundError: If the configuration file is not found.
+        yaml.YAMLError: Error related with parsing YAML file.
+        Exceptions: For all other unrelated exceptions.
+    """
+    try:
+        with open(config_path, "r") as file:
+            config = yaml.safe_load(file)
+            logging.info(f"Successfully loaded configuration from: {config_path}")
+            return config         
+    except FileNotFoundError:
+        logging.error(f"Configuration file not found: {config_path}")
+        raise 
+    except yaml.YAMLError as e:
+        logging.error(f"Error parsing YAML file {config_path}: {e}")
+        raise
+    except Exception as e:
+        logging.error(f"An unexpected error occurred while loading config: {e}")
+        raise
+    
 def load_data(
-    data_url: str
+    data_path: str
 ) -> DataFrame:
     """
     Load raw data from a given data source.
@@ -38,17 +71,17 @@ def load_data(
         Exception: Any other errors during loading the data and raised for further handling.
     """
     try:
-        if data_url.startswith(("http://", "https://")):
-            df = pd.read_csv(data_url)
+        if data_path.startswith(("http://", "https://")):
+            df = pd.read_csv(data_path)
         else:
-            if not os.path.exists(data_url):
-                raise FileNotFoundError(f"Data file not found at: {data_url}")
-            df = pd.read_csv(data_url)
+            if not os.path.exists(data_path):
+                raise FileNotFoundError(f"Data file not found at: {data_path}")
+            df = pd.read_csv(data_path)
 
         if df.empty:
             raise ValueError("Loaded data is empty")
         logger.info(f"""
-                    Successfully loaded data from: {data_url}
+                    Successfully loaded data from: {data_path}
                     DataFrame: {len(df)} rows and {len(df.columns)} columns.
                     """)
         return df
@@ -131,23 +164,20 @@ def main():
     """
     Main entry point for data ingestion
     """
-    # URL of the raw data
-    url = "https://raw.githubusercontent.com/Himanshu-1703/reddit-sentiment-analysis/refs/heads/main/data/reddit.csv"
+    # Step 0: Load the configuration
+    config = load_config(
+        config_path="config/paths.yaml"
+    )
     
-    # Get the absolute path of current script
-    current_dir = Path(__file__).resolve().parent
+    # Step 1: Load the data
+    data_path = config["data"]["raw_data"]
+    df = load_data(data_path=data_path)
     
-    # Get the project directory by going two level up
-    project_dir = current_dir.parent.parent
-    
-    # Load the raw data from the URL
-    df = load_data(url)
-    
-    # Split the loaded data into training and testing sets
+    # Step 2: Split the loaded data into training and testing sets
     train_data, test_data = split_data(df)
     
     # Get the directory where the data will be saved
-    data_dir = project_dir / "data" / "raw"
+    data_dir = config["data"]["save_path"]
     if not data_dir.exists():
         os.makedirs(data_dir)
     
