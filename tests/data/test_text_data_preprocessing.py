@@ -1,14 +1,8 @@
-import os
-import sys
 import tempfile
-import pytest
 import pandas as pd
 
-project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-sys.path.insert(0, project_root)
-
 from pandas import DataFrame
-from src.data import text_data_preprocessing
+from data import text_data_preprocessing
 from unittest.mock import patch
 from pathlib import Path
 

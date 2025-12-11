@@ -1,15 +1,10 @@
-import os
-import sys
 import tempfile
 import pytest
 import pandas as pd
 
-project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-sys.path.insert(0, project_root)
-
 from pandas import DataFrame
 from pathlib import Path
-from src.data import data_ingestion
+from data import data_ingestion
 
 
 @pytest.fixture
